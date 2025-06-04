@@ -1,24 +1,89 @@
-# README
+# Meta Tic-Tac-Toe (MTTT)
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+メタ○×ゲーム - 9つのボードで戦う究極の三目並べゲーム
 
-Things you may want to cover:
+## 概要
 
-* Ruby version
+Meta Tic-Tac-Toe（MTTT）は、通常の三目並べを9つ組み合わせた戦略的なゲームです。各ボードで勝利を収めながら、全体のボード配置でも勝利パターンを作ることを目指します。
 
-* System dependencies
+## ゲームルール
 
-* Configuration
+### 基本ルール
+1. ゲームは9つのボード（A-I）で構成され、各ボードには9つのパネル（1-9）があります
+2. プレイヤーが置いたパネルの位置によって、次のプレイヤーが操作するボードが決まります
+   - 例：パネル5に置く → 次はボードE（中央）で操作
+3. 指定されたボードが既に決着している場合は、任意のボードを選択できます
 
-* Database creation
+### 勝利条件
+1. **最優先**: ボード全体で縦・横・斜めのいずれかに3つ揃える（通常の三目並べと同じ）
+2. **次の条件**: すべてのボードが決着した場合、より多くのボードを獲得したプレイヤーの勝利
 
-* Database initialization
+## ゲームモード
 
-* How to run the test suite
+- **ローカルモード**: 同じ画面で2人のプレイヤーが交互にプレイ
+- **PCモード**: コンピュータと対戦
+- **ネットワークモード**: オンラインで他のプレイヤーと対戦（開発中）
 
-* Services (job queues, cache servers, search engines, etc.)
+## 技術スタック
 
-* Deployment instructions
+- Ruby on Rails 8.0.2
+- Ruby 3.3.6
+- Hotwire (Turbo + Stimulus)
+- Tailwind CSS
+- SQLite3（開発環境）
 
-* ...
+## セットアップ
+
+```bash
+# リポジトリのクローン
+git clone [repository-url]
+cd mttt
+
+# 依存関係のインストール
+bundle install
+
+# データベースのセットアップ
+bin/rails db:create
+bin/rails db:migrate
+
+# 開発サーバーの起動
+bin/dev
+```
+
+ブラウザで http://localhost:3000 にアクセスしてゲームを開始できます。
+
+## 開発
+
+### テストの実行
+```bash
+# すべてのテストを実行
+bin/rails test
+
+# システムテストのみ実行
+bin/rails test:system
+```
+
+### コード品質チェック
+```bash
+# RuboCopでコードスタイルをチェック
+bundle exec rubocop
+
+# セキュリティチェック
+bundle exec brakeman
+```
+
+## デプロイ
+
+本アプリケーションはDockerとKamalを使用したデプロイに対応しています。
+
+```bash
+# Dockerイメージのビルド
+docker build -t mttt .
+
+# Kamalでのデプロイ
+kamal deploy
+```
+
+## ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。
