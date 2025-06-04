@@ -18,6 +18,17 @@ class GamesController < ApplicationController
   # POST /games/:id/move
   # ローカル／PC／ネットすべて JSON で結果を返す
   def move
+    # ネットワークゲームのターン制御
+    if @game.mode == "net"
+      network_game = NetworkGame.find_by(game: @game)
+      current_session = session[:player_id]
+
+      # プレイヤーの権限チェック
+      unless network_game&.player_number(current_session) == @game.current_player
+        render json: { error: "あなたのターンではありません" }, status: :forbidden
+        return
+      end
+    end
     # --- 1) ユーザ入力の取得 ---
     board = @game.boards.find_by!(name: params.require(:board))
     panel = board.panels.find_by!(index: params.require(:panel).to_i)
@@ -71,7 +82,7 @@ class GamesController < ApplicationController
     # ボード単体の勝敗判定
     board.check_winner!
     Rails.logger.info "After check_winner: Board #{board.name} completed=#{board.completed}, winner=#{board.winner}"
-    
+
     # ボードが決着した時点で全体の勝者をチェック（3つ揃った瞬間に終了）
     immediate_winner = @game.check_overall_winner if board.completed
 
@@ -89,7 +100,7 @@ class GamesController < ApplicationController
       skip_message = "次の操作対象のボード#{target_name}は決着済みです。任意のボードで続けてください。"
       Rails.logger.info "Next board is completed, setting next_board_name to nil"
       Rails.logger.info "Game mode: #{@game.mode}, Current player: #{user_player}"
-      
+
       # すべてのモードで、次のボードが決着済みの場合はプレイヤーを交代させない
       Rails.logger.info "Keeping player as #{user_player} due to completed next board"
       @game.update!(
@@ -99,7 +110,7 @@ class GamesController < ApplicationController
     else
       next_board_name = next_board&.name
       Rails.logger.info "Next board is available, setting next_board_name to #{next_board_name}"
-      
+
       # 通常の場合は常にプレイヤーを交代
       @game.update!(
         current_player: (user_player == "X" ? "O" : "X"),
@@ -156,12 +167,12 @@ class GamesController < ApplicationController
       result[:move_count_o] = @game.moves.where(player: "O").count
       result[:board_count_x] = @game.boards.where(winner: "X").count
       result[:board_count_o] = @game.boards.where(winner: "O").count
-      
+
       # PCの手の後のスキップメッセージを追加
       if pc_move_data[:skip_after_pc]
         result[:skip_message] = pc_move_data[:skip_message]
       end
-      
+
       # PCの手の後も勝者判定
       overall_winner = @game.check_overall_winner
       if overall_winner.present?
@@ -227,12 +238,12 @@ class GamesController < ApplicationController
     target_name  = letter_map[pc_panel.index - 1]
     next_board   = @game.boards.find_by(name: target_name)
     skip_after_pc = false
-    
+
     if next_board&.completed
       next_board_name = nil
       skip_after_pc = true
       Rails.logger.info "PC move leads to completed board #{target_name}, will skip to O's turn"
-      
+
       # PCの手の後、次のボードが決着済みならOのターンを維持
       @game.update!(
         current_player: "O",

@@ -11,10 +11,24 @@
       <%= f.label :mode_pc, "PC と対戦 (PC はランダム)" %>
       <br>
       <%= f.radio_button :mode, "net", id: "mode_net" %>
-      <%= f.label :mode_net, "ネットワーク対戦 (後で実装)" %>
+      <%= f.label :mode_net, "ネットワーク対戦 (オンライン)" %>
     </div>
   </div>
   <div>
-    <%= f.submit "ゲーム開始", class: "px-4 py-2 bg-blue-600 text-white rounded" %>
+    <%= f.submit "ゲーム開始", class: "px-4 py-2 bg-blue-600 text-white rounded", id: "start-game-btn" %>
   </div>
 <% end %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const netRadio = document.querySelector('#mode_net');
+    
+    form.addEventListener('submit', function(e) {
+      if (netRadio.checked) {
+        e.preventDefault();
+        window.location.href = '<%= network_games_join_path %>';
+      }
+    });
+  });
+</script>

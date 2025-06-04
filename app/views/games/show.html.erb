@@ -3,6 +3,10 @@
   data-mttt-game-id-value="<%= @game.id %>"
   data-mttt-next-board-value="<%= @game.next_board %>"
   data-mttt-mode-value="<%= @game.mode %>"
+  <% if @game.mode == "net" %>
+    <% network_game = NetworkGame.find_by(game: @game) %>
+    data-mttt-player-role-value="<%= network_game&.player_number(session[:player_id]) %>"
+  <% end %>
   class="space-y-6 px-4 py-6"
 >
   <h2 class="text-xl font-semibold mb-4">
@@ -13,6 +17,13 @@
     <span data-mttt-target="currentTurn">
       <% if @game.mode == "pc" %>
         <%= @game.current_player == "X" ? "あなたのターンです" : "PCのターンです" %>
+      <% elsif @game.mode == "net" %>
+        <% network_game = NetworkGame.find_by(game: @game) %>
+        <% if network_game&.player_number(session[:player_id]) == @game.current_player %>
+          あなたのターンです
+        <% else %>
+          相手のターンです
+        <% end %>
       <% else %>
         <%= @game.current_player %>のターンです
       <% end %>

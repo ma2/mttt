@@ -1,0 +1,40 @@
+<div class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg text-center">
+  <h1 class="text-2xl font-bold mb-6">対戦相手を待機中...</h1>
+  
+  <div class="mb-6">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+    <p class="text-gray-600">マッチングコード: <strong><%= @network_game.match_code %></strong></p>
+    <p class="text-sm text-gray-500 mt-2">同じコードを入力した相手が見つかるまでお待ちください</p>
+  </div>
+  
+  <div class="space-y-3">
+    <button onclick="checkMatch()" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
+      再確認
+    </button>
+    <%= link_to "キャンセル", new_game_path, class: "block w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors" %>
+  </div>
+</div>
+
+<script>
+  let checkInterval;
+  
+  function checkMatch() {
+    fetch('<%= check_match_network_game_path(@network_game) %>')
+      .then(response => response.json())
+      .then(data => {
+        if (data.matched) {
+          clearInterval(checkInterval);
+          window.location.href = data.game_url;
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+  
+  // 3秒ごとに自動チェック
+  checkInterval = setInterval(checkMatch, 3000);
+  
+  // ページを離れる時にクリア
+  window.addEventListener('beforeunload', () => {
+    clearInterval(checkInterval);
+  });
+</script>

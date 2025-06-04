@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_01_112016) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_04_044243) do
   create_table "boards", force: :cascade do |t|
     t.integer "game_id", null: false
     t.string "name", null: false
@@ -41,6 +41,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_01_112016) do
     t.index ["panel_id"], name: "index_moves_on_panel_id"
   end
 
+  create_table "network_games", force: :cascade do |t|
+    t.string "match_code", null: false
+    t.integer "game_id", null: false
+    t.string "player1_session"
+    t.string "player2_session"
+    t.string "status", default: "waiting"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id"], name: "index_network_games_on_game_id"
+    t.index ["match_code"], name: "index_network_games_on_match_code"
+    t.index ["status"], name: "index_network_games_on_status"
+  end
+
   create_table "panels", force: :cascade do |t|
     t.integer "board_id", null: false
     t.integer "index", null: false
@@ -54,5 +67,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_01_112016) do
   add_foreign_key "moves", "boards"
   add_foreign_key "moves", "games"
   add_foreign_key "moves", "panels"
+  add_foreign_key "network_games", "games"
   add_foreign_key "panels", "boards"
 end

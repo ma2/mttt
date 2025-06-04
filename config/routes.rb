@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  get "network_games/join"
+  post "network_games/create_match"
+  get "network_games/waiting"
+  get "network_games/:id/check_match", to: "network_games#check_match", as: "check_match_network_game"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

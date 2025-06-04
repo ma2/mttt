@@ -6,6 +6,7 @@ export default class extends Controller {
     gameId: Number,
     nextBoard: String,
     mode: String,
+    playerRole: String,
   };
 
   connect() {
@@ -191,6 +192,10 @@ export default class extends Controller {
     if (data.current_player && this.hasCurrentTurnTarget) {
       if (this.modeValue === "pc") {
         this.currentTurnTarget.textContent = data.current_player === "X" ? "あなたのターンです" : "PCのターンです";
+      } else if (this.modeValue === "net") {
+        // ネットモードでは相手の手も受け取るので、playerRoleと比較
+        const isMyTurn = this.playerRoleValue === data.current_player;
+        this.currentTurnTarget.textContent = isMyTurn ? "あなたのターンです" : "相手のターンです";
       } else {
         this.currentTurnTarget.textContent = `${data.current_player}のターンです`;
       }
