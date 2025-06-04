@@ -1,0 +1,24 @@
+<div
+  data-board-name="<%= board.name %>"
+  class="border-2 p-1 relative <%= 'border-4 border-sky-400' if board.name == @game.next_board %> <%= 'opacity-50' if board.completed %>"
+>
+  <div class="grid grid-cols-3">
+    <% board.panels.each do |panel| %>
+      <button
+        data-action="click->mttt#select"
+        data-mttt-board-value="<%= board.name %>"
+        data-mttt-panel-value="<%= panel.index %>"
+        data-board-completed="<%= board.completed %>"
+        class="w-12 h-12 flex items-center justify-center text-2xl transition-transform bg-white border border-gray-300 <%= board.completed || panel.state.present? ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-100' %>"
+        <%= "disabled" if panel.state.present? || board.completed || ( @game.next_board.present? && board.name != @game.next_board ) %>
+      >
+        <%= panel.state %>
+      </button>
+    <% end %>
+  </div>
+  <% if board.completed && board.winner.present? %>
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <span class="text-green-500 text-8xl font-bold opacity-80"><%= board.winner %></span>
+    </div>
+  <% end %>
+</div>

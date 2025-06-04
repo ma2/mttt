@@ -1,0 +1,60 @@
+<div
+  data-controller="mttt"
+  data-mttt-game-id-value="<%= @game.id %>"
+  data-mttt-next-board-value="<%= @game.next_board %>"
+  data-mttt-mode-value="<%= @game.mode %>"
+  class="space-y-6 px-4 py-6"
+>
+  <h2 class="text-xl font-semibold mb-4">
+    <%= @game.mode == "local" ? "ローカルモード" : (@game.mode == "pc" ? "PCモード" : "ネットワークモード") %>
+  </h2>
+  
+  <div class="text-lg font-semibold mb-4">
+    <span data-mttt-target="currentTurn">
+      <% if @game.mode == "pc" %>
+        <%= @game.current_player == "X" ? "あなたのターンです" : "PCのターンです" %>
+      <% else %>
+        <%= @game.current_player %>のターンです
+      <% end %>
+    </span>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4">
+    <%= render partial: "boards/board", collection: @game.boards, as: :board %>
+  </div>
+
+  <div class="mt-6">
+    <p>操作したパネル数：X(<span data-mttt-target="moveCountX">0</span>) – O(<span data-mttt-target="moveCountO">0</span>)</p>
+    <p>勝利したボード数：X(<span data-mttt-target="boardCountX">0</span>) – O(<span data-mttt-target="boardCountO">0</span>)</p>
+  </div>
+
+  <div class="mt-6">
+    <p class="text-2xl font-bold text-red-600" data-mttt-target="result"></p>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "最初に戻る", new_game_path, class: "px-3 py-1 border rounded" %>
+  </div>
+  
+  <!-- 勝利ダイアログ -->
+  <dialog data-mttt-target="winDialog" class="p-8 rounded-lg shadow-xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
+    <div class="text-center">
+      <h2 class="text-3xl font-bold mb-4" data-mttt-target="winMessage"></h2>
+      <p class="text-lg mb-6">
+        最終スコア: X(<span data-mttt-target="finalBoardCountX">0</span>) - O(<span data-mttt-target="finalBoardCountO">0</span>)
+      </p>
+      <div class="flex gap-4 justify-center">
+        <button data-action="click->mttt#closeDialog" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded">閉じる</button>
+        <%= link_to "もう一度プレイ", new_game_path, class: "px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded" %>
+      </div>
+    </div>
+  </dialog>
+  
+  <!-- スキップダイアログ -->
+  <dialog data-mttt-target="skipDialog" class="p-6 rounded-lg shadow-xl max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
+    <div class="text-center">
+      <p class="text-lg mb-4" data-mttt-target="skipMessage"></p>
+      <button data-action="click->mttt#closeSkipDialog" class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded">OK</button>
+    </div>
+  </dialog>
+</div>
