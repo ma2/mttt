@@ -14,7 +14,7 @@ class NetworkGame < ApplicationRecord
   def self.find_or_create_match(match_code, session_id)
     # 既存の待機中のゲームを探す
     waiting_game = where(match_code: match_code, status: "waiting").first
-    
+
     Rails.logger.info "=== NetworkGame.find_or_create_match ==="
     Rails.logger.info "Match code: #{match_code}, Session ID: #{session_id}"
     Rails.logger.info "Waiting game found: #{waiting_game&.id}, player1: #{waiting_game&.player1_session}"

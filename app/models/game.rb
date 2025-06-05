@@ -12,38 +12,38 @@ class Game < ApplicationRecord
     pc:    "pc",
     net:   "net"
   }
-  
+
   # ゲーム全体の勝者を判定
   def check_overall_winner
     # ボードをA-Iの順番で3x3配列として扱う
     # A B C
     # D E F
     # G H I
-    
+
     # 勝利パターン
     lines = [
-      ["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"], # 横
-      ["A", "D", "G"], ["B", "E", "H"], ["C", "F", "I"], # 縦
-      ["A", "E", "I"], ["C", "E", "G"]                    # 斜め
+      [ "A", "B", "C" ], [ "D", "E", "F" ], [ "G", "H", "I" ], # 横
+      [ "A", "D", "G" ], [ "B", "E", "H" ], [ "C", "F", "I" ], # 縦
+      [ "A", "E", "I" ], [ "C", "E", "G" ]                    # 斜め
     ]
-    
+
     # 各ラインをチェック
     lines.each do |line|
       board_winners = boards.where(name: line).pluck(:winner)
       next if board_winners.include?(nil) || board_winners.include?("")
-      
+
       # 3つとも同じ勝者なら、そのプレイヤーが勝利
       if board_winners.uniq.size == 1
         return board_winners.first
       end
     end
-    
+
     # Tic-Tac-Toeパターンが成立しない場合
     # すべてのボードが決着済みなら、勝利ボード数で判定
     if boards.where(completed: false).empty?
       x_count = boards.where(winner: "X").count
       o_count = boards.where(winner: "O").count
-      
+
       if x_count > o_count
         return "X"
       elsif o_count > x_count
@@ -52,7 +52,7 @@ class Game < ApplicationRecord
         return "D" # 引き分け
       end
     end
-    
+
     # まだゲーム続行中
     nil
   end
