@@ -1,15 +1,15 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  match_code: MyString
-  game: one
-  player1_session: MyString
-  player2_session: MyString
-  status: MyString
+  match_code: "test123"
+  game: three
+  player1_session: "session1"
+  player2_session: "session2"
+  status: "playing"
 
 two:
-  match_code: MyString
-  game: two
-  player1_session: MyString
-  player2_session: MyString
-  status: MyString
+  match_code: "test456"
+  game: one
+  player1_session: "session3"
+  player2_session: nil
+  status: "waiting"

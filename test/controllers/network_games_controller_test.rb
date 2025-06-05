@@ -7,7 +7,8 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get waiting" do
-    get network_games_waiting_url
+    network_game = network_games(:two)  # waiting状態のnetwork_gameを使用
+    get network_games_waiting_url(network_game_id: network_game.id)
     assert_response :success
   end
 end
