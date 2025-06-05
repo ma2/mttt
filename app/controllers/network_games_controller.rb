@@ -39,8 +39,9 @@ class NetworkGamesController < ApplicationController
   def check_match
     network_game = NetworkGame.find(params[:id])
 
-    if network_game.matched?
-      network_game.update!(status: "playing")
+    if network_game.matched? || network_game.playing?
+      # マッチング済みまたはプレイ中の場合
+      network_game.update!(status: "playing") if network_game.matched?
       render json: { matched: true, game_url: game_path(network_game.game) }
     else
       render json: { matched: false }

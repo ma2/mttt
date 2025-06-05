@@ -14,9 +14,14 @@ class NetworkGame < ApplicationRecord
   def self.find_or_create_match(match_code, session_id)
     # 既存の待機中のゲームを探す
     waiting_game = where(match_code: match_code, status: "waiting").first
+    
+    Rails.logger.info "=== NetworkGame.find_or_create_match ==="
+    Rails.logger.info "Match code: #{match_code}, Session ID: #{session_id}"
+    Rails.logger.info "Waiting game found: #{waiting_game&.id}, player1: #{waiting_game&.player1_session}"
 
     if waiting_game && waiting_game.player1_session != session_id
       # マッチング成立
+      Rails.logger.info "Match found! Updating game #{waiting_game.id}"
       waiting_game.update!(
         player2_session: session_id,
         status: "matched"
@@ -24,13 +29,16 @@ class NetworkGame < ApplicationRecord
       waiting_game
     else
       # 新しいゲームを作成
+      Rails.logger.info "Creating new game"
       game = Game.create!(mode: "net")
-      create!(
+      new_network_game = create!(
         match_code: match_code,
         game: game,
         player1_session: session_id,
         status: "waiting"
       )
+      Rails.logger.info "Created NetworkGame #{new_network_game.id} for Game #{game.id}"
+      new_network_game
     end
   end
 

@@ -1,0 +1,76 @@
+<div class="max-w-4xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
+  <div class="text-center mb-2">
+    <img src="/logo.svg" alt="TicTacNine Logo" class="w-16 h-16 mx-auto mb-3">
+    <h1 class="text-2xl font-bold">TicTacNine</h1>
+  </div>
+  <h2 class="text-xl font-semibold text-center mb-6">あそびかた</h2>
+  
+  <div class="space-y-6">
+    <!-- ゲームの概要 -->
+    <section>
+      <h3 class="text-lg font-semibold mb-3 text-blue-600">🎮 ゲームの概要</h3>
+      <p class="text-gray-700 leading-relaxed">
+        TicTacNineは、9つの小さな○×ゲーム（Tic-Tac-Toe）を組み合わせた戦略的なゲームです。
+        普通の○×ゲームとは違い、自分の手によって相手が次に打てる場所が決まる、奥深いゲームです。
+      </p>
+    </section>
+
+    <!-- ゲームの目標 -->
+    <section>
+      <h3 class="text-lg font-semibold mb-3 text-blue-600">🎯 ゲームの目標</h3>
+      <p class="text-gray-700 leading-relaxed">
+        9つのボードのうち3つを縦・横・斜めのいずれかに並べて勝利しましょう！
+        各ボードで3つ揃えるとそのボードを獲得できます。
+      </p>
+    </section>
+
+    <!-- 基本ルール -->
+    <section>
+      <h3 class="text-lg font-semibold mb-3 text-blue-600">📋 基本ルール</h3>
+      <ol class="list-decimal list-inside space-y-2 text-gray-700">
+        <li>プレイヤーはX、相手（PCまたは他プレイヤー）はOでプレイします</li>
+        <li>最初は任意のボードの任意のマスに打てます</li>
+        <li>あなたが選んだマスの位置によって、相手が次に打つボードが決まります</li>
+        <li>指定されたボードが既に決着済みの場合、任意のボードを選べます</li>
+        <li>各ボードで縦・横・斜めのいずれかに3つ揃えるとそのボードを獲得</li>
+        <li>9つのボードのうち3つを縦・横・斜めに並べたプレイヤーの勝利</li>
+      </ol>
+    </section>
+
+    <!-- 重要なポイント -->
+    <section>
+      <h3 class="text-lg font-semibold mb-3 text-blue-600">⚡ 重要なポイント</h3>
+      <div class="bg-yellow-50 p-4 rounded-lg">
+        <p class="text-gray-700 leading-relaxed">
+          <strong>マスの位置 = 次のボード</strong><br>
+          例：ボードAの右上のマス（位置3）に打つと、相手は次にボードC（3番目のボード）でプレイすることになります。
+          この連鎖的なルールが戦略の鍵となります！
+        </p>
+      </div>
+    </section>
+
+    <!-- 対戦モード -->
+    <section>
+      <h3 class="text-lg font-semibold mb-3 text-blue-600">🎲 対戦モード</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-blue-800 mb-2">ローカルモード</h4>
+          <p class="text-sm text-blue-700">同じ画面で2人が交互にプレイ</p>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-green-800 mb-2">PCモード</h4>
+          <p class="text-sm text-green-700">コンピューター相手に1人でプレイ</p>
+        </div>
+        <div class="bg-purple-50 p-4 rounded-lg">
+          <h4 class="font-semibold text-purple-800 mb-2">ネットワークモード</h4>
+          <p class="text-sm text-purple-700">オンラインで他のプレイヤーと対戦</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 戻るボタン -->
+    <div class="text-center pt-6">
+      <%= link_to "ゲーム選択に戻る", new_game_path, class: "bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition-colors" %>
+    </div>
+  </div>
+</div>

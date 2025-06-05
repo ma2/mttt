@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-  static targets = ["currentTurn", "moveCountX", "moveCountO", "boardCountX", "boardCountO", "result", "winDialog", "winMessage", "finalBoardCountX", "finalBoardCountO", "skipDialog", "skipMessage"];
+  static targets = ["currentTurn", "moveCountX", "moveCountO", "boardCountX", "boardCountO", "result", "winDialog", "winMessage", "finalBoardCountX", "finalBoardCountO", "skipDialog", "skipMessage", "abandonDialog"];
   static values = {
     gameId: Number,
     nextBoard: String,
@@ -15,12 +15,29 @@ export default class extends Controller {
     this.moveCountO = 0;
     this.countX = 0;
     this.countO = 0;
+    this.currentPlayer = "X"; // 初期プレイヤー
 
     // ユーザ・PC 両方の手をポップエフェクトで強調するために
     // CSS アニメーション・クラスは Tailwind に定義済み
 
     // Check if we need to handle skip on page load
     this.checkForSkipNeeded();
+    
+    // ネット対戦の場合、定期的にチェック
+    if (this.modeValue === "net") {
+      // 最後の手のIDを記録
+      this.lastMoveId = 0;
+      
+      // 対戦終了チェック
+      this.abandonCheckInterval = setInterval(() => {
+        this.checkAbandoned();
+      }, 3000);
+      
+      // 相手の手をチェック
+      this.opponentMoveInterval = setInterval(() => {
+        this.checkOpponentMove();
+      }, 1000);
+    }
   }
 
   checkForSkipNeeded() {
@@ -135,6 +152,10 @@ export default class extends Controller {
       // data.moves は配列──最初にユーザの手、PC モードなら続いて PC の手の情報が入る
       data.moves.forEach((move) => {
         this.applyMove(move);
+        // ネット対戦の場合、最後の手のIDを記録
+        if (this.modeValue === "net" && move.id) {
+          this.lastMoveId = move.id;
+        }
       });
 
       // moves の最後を見て next_board を更新
@@ -189,15 +210,19 @@ export default class extends Controller {
     this.boardCountOTarget.textContent = this.countO;
     
     // 現在のプレイヤーを更新
-    if (data.current_player && this.hasCurrentTurnTarget) {
-      if (this.modeValue === "pc") {
-        this.currentTurnTarget.textContent = data.current_player === "X" ? "あなたのターンです" : "PCのターンです";
-      } else if (this.modeValue === "net") {
-        // ネットモードでは相手の手も受け取るので、playerRoleと比較
-        const isMyTurn = this.playerRoleValue === data.current_player;
-        this.currentTurnTarget.textContent = isMyTurn ? "あなたのターンです" : "相手のターンです";
-      } else {
-        this.currentTurnTarget.textContent = `${data.current_player}のターンです`;
+    if (data.current_player) {
+      this.currentPlayer = data.current_player;
+      
+      if (this.hasCurrentTurnTarget) {
+        if (this.modeValue === "pc") {
+          this.currentTurnTarget.textContent = data.current_player === "X" ? "あなた（X）のターンです" : "PC（O）のターンです";
+        } else if (this.modeValue === "net") {
+          // ネットモードでは相手の手も受け取るので、playerRoleと比較
+          const isMyTurn = this.playerRoleValue === data.current_player;
+          this.currentTurnTarget.textContent = isMyTurn ? `あなた（${this.playerRoleValue}）のターンです` : `相手（${data.current_player}）のターンです`;
+        } else {
+          this.currentTurnTarget.textContent = `${data.current_player}のターンです`;
+        }
       }
     }
 
@@ -300,6 +325,144 @@ export default class extends Controller {
   closeSkipDialog() {
     if (this.hasSkipDialogTarget) {
       this.skipDialogTarget.close();
+    }
+  }
+  
+  // 対戦終了ボタンが押された時
+  abandonGame() {
+    if (this.hasAbandonDialogTarget) {
+      this.abandonDialogTarget.showModal();
+    }
+  }
+  
+  // 対戦終了確認ダイアログを閉じる
+  closeAbandonDialog() {
+    if (this.hasAbandonDialogTarget) {
+      this.abandonDialogTarget.close();
+    }
+  }
+  
+  // 対戦終了を確定
+  confirmAbandon() {
+    fetch(`/games/${this.gameIdValue}/abandon`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": document.querySelector("[name=csrf-token]").content,
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.abandoned) {
+          this.closeAbandonDialog();
+          this.showSkipDialog(data.message);
+          
+          // インターバルをクリア
+          if (this.abandonCheckInterval) {
+            clearInterval(this.abandonCheckInterval);
+          }
+          
+          // 数秒後にトップページに戻る
+          setTimeout(() => {
+            window.location.href = "/games/new";
+          }, 3000);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        this.closeAbandonDialog();
+        this.showSkipDialog("対戦終了でエラーが発生しました");
+      });
+  }
+  
+  // 対戦相手が終了したかチェック
+  checkAbandoned() {
+    // ネット対戦でない場合はチェックしない
+    if (this.modeValue !== "net") {
+      return;
+    }
+    
+    fetch(`/games/${this.gameIdValue}/check_abandoned`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.abandoned) {
+          this.showSkipDialog(data.message);
+          
+          // インターバルをクリア
+          if (this.abandonCheckInterval) {
+            clearInterval(this.abandonCheckInterval);
+          }
+          
+          // 数秒後にトップページに戻る
+          setTimeout(() => {
+            window.location.href = "/games/new";
+          }, 3000);
+        }
+      })
+      .catch(error => {
+        console.error('Error checking abandoned:', error);
+        // エラーが続く場合はインターバルをクリア
+        if (this.abandonCheckInterval) {
+          clearInterval(this.abandonCheckInterval);
+        }
+      });
+  }
+  
+  // 相手の手をチェック
+  checkOpponentMove() {
+    // 自分のターンの場合はチェックしない
+    if (this.playerRoleValue === this.currentPlayer) {
+      return;
+    }
+    
+    fetch(`/games/${this.gameIdValue}/check_opponent_move?last_move_id=${this.lastMoveId}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.new_move) {
+          // 新しい手を適用
+          data.moves.forEach(move => {
+            this.applyMove(move);
+            this.lastMoveId = move.id;
+          });
+          
+          // ゲーム状態を更新
+          this.onReceive({
+            skip: false,
+            moves: [],
+            next_board: data.next_board,
+            current_player: data.current_player,
+            move_count: data.move_count,
+            move_count_x: data.move_count_x,
+            move_count_o: data.move_count_o,
+            board_count_x: data.board_count_x,
+            board_count_o: data.board_count_o,
+            game_over: data.game_over,
+            overall_winner: data.overall_winner
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error checking opponent move:', error);
+      });
+  }
+  
+  // ページを離れる時にインターバルをクリア
+  disconnect() {
+    if (this.abandonCheckInterval) {
+      clearInterval(this.abandonCheckInterval);
+    }
+    if (this.opponentMoveInterval) {
+      clearInterval(this.opponentMoveInterval);
     }
   }
 }

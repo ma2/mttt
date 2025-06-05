@@ -9,7 +9,11 @@
   <% end %>
   class="space-y-6 px-4 py-6"
 >
-  <h2 class="text-xl font-semibold mb-4">
+  <div class="text-center mb-2">
+    <img src="/logo.svg" alt="TicTacNine Logo" class="w-12 h-12 mx-auto mb-2">
+    <h1 class="text-2xl font-bold">TicTacNine</h1>
+  </div>
+  <h2 class="text-xl font-semibold mb-4 text-center">
     <%= @game.mode == "local" ? "ローカルモード" : (@game.mode == "pc" ? "PCモード" : "ネットワークモード") %>
   </h2>
   
@@ -44,7 +48,13 @@
   </div>
 
   <div class="mt-6">
-    <%= link_to "最初に戻る", new_game_path, class: "px-3 py-1 border rounded" %>
+    <% if @game.mode == "net" %>
+      <button data-action="click->mttt#abandonGame" class="px-3 py-1 border rounded bg-red-100 hover:bg-red-200 text-red-700">
+        対戦を終了
+      </button>
+    <% else %>
+      <%= link_to "最初に戻る", new_game_path, class: "px-3 py-1 border rounded" %>
+    <% end %>
   </div>
   
   <!-- 勝利ダイアログ -->
@@ -66,6 +76,22 @@
     <div class="text-center">
       <p class="text-lg mb-4" data-mttt-target="skipMessage"></p>
       <button data-action="click->mttt#closeSkipDialog" class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded">OK</button>
+    </div>
+  </dialog>
+  
+  <!-- 対戦終了確認ダイアログ -->
+  <dialog data-mttt-target="abandonDialog" class="p-6 rounded-lg shadow-xl max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
+    <div class="text-center">
+      <h3 class="text-lg font-semibold mb-4">対戦を終了しますか？</h3>
+      <p class="text-sm text-gray-600 mb-6">対戦を終了すると、相手の勝利となります。</p>
+      <div class="flex gap-3">
+        <button data-action="click->mttt#confirmAbandon" class="flex-1 bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">
+          終了する
+        </button>
+        <button data-action="click->mttt#closeAbandonDialog" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400">
+          キャンセル
+        </button>
+      </div>
     </div>
   </dialog>
 </div>
