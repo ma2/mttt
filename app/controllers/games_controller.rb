@@ -206,10 +206,10 @@ class GamesController < ApplicationController
 
     # 放棄したプレイヤーを記録（セッションクリア前に取得）
     abandon_player = network_game.player_number(current_session)
-    
+
     # ゲームを終了状態に変更
     network_game.update!(status: "finished")
-    
+
     # network_gamesレコードを無効化（追加の処理）
     # プレイヤーセッションをクリアして再利用不可にする
     network_game.update!(
@@ -217,7 +217,7 @@ class GamesController < ApplicationController
       player2_session: nil,
       match_code: "#{network_game.match_code}_ABANDONED_#{Time.current.to_i}"
     )
-    
+
     # 3時間以上更新されていない古いレコードも無効化
     cleanup_old_network_games
     opponent_player = abandon_player == "X" ? "O" : "X"
@@ -253,28 +253,28 @@ class GamesController < ApplicationController
       render json: { abandoned: false }
     end
   end
-  
+
   # 相手の最新の手をチェック
   def check_opponent_move
     if @game.mode != "net"
       render json: { new_move: false }
       return
     end
-    
+
     network_game = NetworkGame.find_by(game: @game)
     current_session = session[:player_id]
-    
+
     unless network_game
       render json: { new_move: false }
       return
     end
-    
+
     # 最後の手番号を取得
     last_move_id = params[:last_move_id].to_i
-    
+
     # 新しい手があるかチェック
     new_moves = @game.moves.where("id > ?", last_move_id).order(:id)
-    
+
     if new_moves.any?
       moves_data = new_moves.map do |move|
         {
@@ -286,7 +286,7 @@ class GamesController < ApplicationController
           completed: move.board.completed
         }
       end
-      
+
       render json: {
         new_move: true,
         moves: moves_data,
@@ -396,7 +396,7 @@ class GamesController < ApplicationController
     cutoff_time = 3.hours.ago
     old_games = NetworkGame.where("updated_at < ?", cutoff_time)
                           .where.not(status: "finished")
-    
+
     old_games.find_each do |old_game|
       old_game.update!(
         status: "finished",
@@ -405,7 +405,7 @@ class GamesController < ApplicationController
         match_code: "#{old_game.match_code}_EXPIRED_#{Time.current.to_i}"
       )
     end
-    
+
     Rails.logger.info "Cleaned up #{old_games.count} expired network games"
   end
 end
