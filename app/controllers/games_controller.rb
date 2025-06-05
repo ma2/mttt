@@ -1,9 +1,13 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [ :show, :move ]
+  before_action :set_game, only: [ :show, :move, :abandon, :check_abandoned, :check_opponent_move ]
 
   def new
     @game = Game.new
     # new.html.erb では form で mode を選択できる
+  end
+
+  def howto
+    # howto.html.erb で遊び方を表示
   end
 
   def create
@@ -18,6 +22,17 @@ class GamesController < ApplicationController
   # POST /games/:id/move
   # ローカル／PC／ネットすべて JSON で結果を返す
   def move
+    # ネットワークゲームのターン制御
+    if @game.mode == "net"
+      network_game = NetworkGame.find_by(game: @game)
+      current_session = session[:player_id]
+
+      # プレイヤーの権限チェック
+      unless network_game&.player_number(current_session) == @game.current_player
+        render json: { error: "あなたのターンではありません" }, status: :forbidden
+        return
+      end
+    end
     # --- 1) ユーザ入力の取得 ---
     board = @game.boards.find_by!(name: params.require(:board))
     panel = board.panels.find_by!(index: params.require(:panel).to_i)
@@ -66,12 +81,12 @@ class GamesController < ApplicationController
     # --- 2) ユーザの手を反映 ---
     user_player = @game.current_player
     panel.update!(state: user_player)
-    Move.create!(game: @game, board: board, panel: panel, player: user_player)
+    user_move = Move.create!(game: @game, board: board, panel: panel, player: user_player)
 
     # ボード単体の勝敗判定
     board.check_winner!
     Rails.logger.info "After check_winner: Board #{board.name} completed=#{board.completed}, winner=#{board.winner}"
-    
+
     # ボードが決着した時点で全体の勝者をチェック（3つ揃った瞬間に終了）
     immediate_winner = @game.check_overall_winner if board.completed
 
@@ -89,7 +104,7 @@ class GamesController < ApplicationController
       skip_message = "次の操作対象のボード#{target_name}は決着済みです。任意のボードで続けてください。"
       Rails.logger.info "Next board is completed, setting next_board_name to nil"
       Rails.logger.info "Game mode: #{@game.mode}, Current player: #{user_player}"
-      
+
       # すべてのモードで、次のボードが決着済みの場合はプレイヤーを交代させない
       Rails.logger.info "Keeping player as #{user_player} due to completed next board"
       @game.update!(
@@ -99,7 +114,7 @@ class GamesController < ApplicationController
     else
       next_board_name = next_board&.name
       Rails.logger.info "Next board is available, setting next_board_name to #{next_board_name}"
-      
+
       # 通常の場合は常にプレイヤーを交代
       @game.update!(
         current_player: (user_player == "X" ? "O" : "X"),
@@ -123,6 +138,7 @@ class GamesController < ApplicationController
     # --- 5) JSON レスポンス生成 ---
     # moves 配列にユーザの手 (user_move) と PC の手 (pc_move_data) を入れてフロントに渡す
     user_move_data = {
+      id:           user_move.id,
       board:        board.name,
       panel:        panel.index,
       player:       user_player,
@@ -156,12 +172,12 @@ class GamesController < ApplicationController
       result[:move_count_o] = @game.moves.where(player: "O").count
       result[:board_count_x] = @game.boards.where(winner: "X").count
       result[:board_count_o] = @game.boards.where(winner: "O").count
-      
+
       # PCの手の後のスキップメッセージを追加
       if pc_move_data[:skip_after_pc]
         result[:skip_message] = pc_move_data[:skip_message]
       end
-      
+
       # PCの手の後も勝者判定
       overall_winner = @game.check_overall_winner
       if overall_winner.present?
@@ -171,6 +187,122 @@ class GamesController < ApplicationController
     end
 
     render json: result
+  end
+
+  # ネット対戦の放棄
+  def abandon
+    if @game.mode != "net"
+      render json: { error: "ネット対戦以外では使用できません" }, status: :bad_request
+      return
+    end
+
+    network_game = NetworkGame.find_by(game: @game)
+    current_session = session[:player_id]
+
+    unless network_game&.player_number(current_session)
+      render json: { error: "このゲームの参加者ではありません" }, status: :forbidden
+      return
+    end
+
+    # 放棄したプレイヤーを記録（セッションクリア前に取得）
+    abandon_player = network_game.player_number(current_session)
+
+    # ゲームを終了状態に変更
+    network_game.update!(status: "finished")
+
+    # network_gamesレコードを無効化（追加の処理）
+    # プレイヤーセッションをクリアして再利用不可にする
+    network_game.update!(
+      player1_session: nil,
+      player2_session: nil,
+      match_code: "#{network_game.match_code}_ABANDONED_#{Time.current.to_i}"
+    )
+
+    # 3時間以上更新されていない古いレコードも無効化
+    cleanup_old_network_games
+    opponent_player = abandon_player == "X" ? "O" : "X"
+
+    render json: {
+      abandoned: true,
+      message: "対戦を終了しました",
+      abandoner: abandon_player,
+      winner: opponent_player
+    }
+  end
+
+  # 対戦相手が放棄したかチェック
+  def check_abandoned
+    if @game.mode != "net"
+      render json: { abandoned: false }
+      return
+    end
+
+    network_game = NetworkGame.find_by(game: @game)
+
+    if network_game&.finished?
+      current_session = session[:player_id]
+      current_player = network_game.player_number(current_session)
+      opponent_player = current_player == "X" ? "O" : "X"
+
+      render json: {
+        abandoned: true,
+        message: "対戦相手が対戦を終了しました",
+        winner: current_player
+      }
+    else
+      render json: { abandoned: false }
+    end
+  end
+
+  # 相手の最新の手をチェック
+  def check_opponent_move
+    if @game.mode != "net"
+      render json: { new_move: false }
+      return
+    end
+
+    network_game = NetworkGame.find_by(game: @game)
+    current_session = session[:player_id]
+
+    unless network_game
+      render json: { new_move: false }
+      return
+    end
+
+    # 最後の手番号を取得
+    last_move_id = params[:last_move_id].to_i
+
+    # 新しい手があるかチェック
+    new_moves = @game.moves.where("id > ?", last_move_id).order(:id)
+
+    if new_moves.any?
+      moves_data = new_moves.map do |move|
+        {
+          id: move.id,
+          board: move.board.name,
+          panel: move.panel.index,
+          player: move.player,
+          board_winner: move.board.winner,
+          completed: move.board.completed
+        }
+      end
+
+      render json: {
+        new_move: true,
+        moves: moves_data,
+        next_board: @game.next_board,
+        current_player: @game.current_player,
+        move_count: @game.moves.count,
+        move_count_x: @game.moves.where(player: "X").count,
+        move_count_o: @game.moves.where(player: "O").count,
+        board_count_x: @game.boards.where(winner: "X").count,
+        board_count_o: @game.boards.where(winner: "O").count,
+        game_over: @game.check_overall_winner.present?,
+        overall_winner: @game.check_overall_winner
+      }
+    else
+      render json: { new_move: false }
+    end
   end
 
   private
@@ -227,12 +359,12 @@ class GamesController < ApplicationController
     target_name  = letter_map[pc_panel.index - 1]
     next_board   = @game.boards.find_by(name: target_name)
     skip_after_pc = false
-    
+
     if next_board&.completed
       next_board_name = nil
       skip_after_pc = true
       Rails.logger.info "PC move leads to completed board #{target_name}, will skip to O's turn"
-      
+
       # PCの手の後、次のボードが決着済みならOのターンを維持
       @game.update!(
         current_player: "O",
@@ -257,5 +389,23 @@ class GamesController < ApplicationController
       skip_after_pc: skip_after_pc,
       skip_message: skip_after_pc ? "次の操作対象のボード#{target_name}は決着済みです。任意のボードで続けてください。" : nil
     }
+  end
+
+  # 3時間以上更新されていない古いネットワークゲームレコードを無効化
+  def cleanup_old_network_games
+    cutoff_time = 3.hours.ago
+    old_games = NetworkGame.where("updated_at < ?", cutoff_time)
+                          .where.not(status: "finished")
+
+    old_games.find_each do |old_game|
+      old_game.update!(
+        status: "finished",
+        player1_session: nil,
+        player2_session: nil,
+        match_code: "#{old_game.match_code}_EXPIRED_#{Time.current.to_i}"
+      )
+    end
+
+    Rails.logger.info "Cleaned up #{old_games.count} expired network games"
   end
 end

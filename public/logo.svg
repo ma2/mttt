@@ -1,0 +1,35 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景円 -->
+  <circle cx="60" cy="60" r="55" fill="#3B82F6" stroke="#1E40AF" stroke-width="2"/>
+  
+  <!-- 9つのグリッドを表現する3x3の枠 -->
+  <g stroke="#FFFFFF" stroke-width="2" fill="none">
+    <!-- 外枠 -->
+    <rect x="25" y="25" width="70" height="70"/>
+    
+    <!-- 縦線 -->
+    <line x1="48.33" y1="25" x2="48.33" y2="95"/>
+    <line x1="71.67" y1="25" x2="71.67" y2="95"/>
+    
+    <!-- 横線 -->
+    <line x1="25" y1="48.33" x2="95" y2="48.33"/>
+    <line x1="25" y1="71.67" x2="95" y2="71.67"/>
+  </g>
+  
+  <!-- X と O のシンボル -->
+  <g stroke="#FFFFFF" stroke-width="3" fill="none">
+    <!-- 左上のX -->
+    <line x1="30" y1="30" x2="43" y2="43"/>
+    <line x1="43" y1="30" x2="30" y2="43"/>
+    
+    <!-- 中央のO -->
+    <circle cx="60" cy="60" r="8" stroke="#FFFFFF" stroke-width="3"/>
+    
+    <!-- 右下のX -->
+    <line x1="77" y1="77" x2="90" y2="90"/>
+    <line x1="90" y1="77" x2="77" y2="90"/>
+  </g>
+  
+  <!-- "9" の数字を右上に -->
+  <text x="85" y="40" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#FFFFFF">9</text>
+</svg>

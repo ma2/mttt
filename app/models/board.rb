@@ -19,7 +19,7 @@ class Board < ApplicationRecord
       sc = panels.find_by(index: c).state
       next if sa.blank? || sb.blank? || sc.blank?
       if sa == sb && sb == sc
-        Rails.logger.info "Board #{name}: Winner found! #{sa} wins with line #{[a,b,c]}"
+        Rails.logger.info "Board #{name}: Winner found! #{sa} wins with line #{[ a, b, c ]}"
         update!(winner: sa, completed: true)
         return sa
       end
