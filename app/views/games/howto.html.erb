@@ -1,15 +1,15 @@
-<div class="max-w-4xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
+<div class="w-full max-w-4xl mx-auto mt-4 sm:mt-8 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
   <div class="text-center mb-2">
-    <img src="/logo.svg" alt="TicTacNine Logo" class="w-16 h-16 mx-auto mb-3">
-    <h1 class="text-2xl font-bold">TicTacNine</h1>
+    <img src="/logo.svg" alt="TicTacNine Logo" class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3">
+    <h1 class="text-xl sm:text-2xl font-bold">TicTacNine</h1>
   </div>
-  <h2 class="text-xl font-semibold text-center mb-6">あそびかた</h2>
+  <h2 class="text-lg sm:text-xl font-semibold text-center mb-4 sm:mb-6">あそびかた</h2>
   
-  <div class="space-y-6">
+  <div class="space-y-4 sm:space-y-6">
     <!-- ゲームの概要 -->
     <section>
-      <h3 class="text-lg font-semibold mb-3 text-blue-600">🎮 ゲームの概要</h3>
-      <p class="text-gray-700 leading-relaxed">
+      <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-blue-600">🎮 ゲームの概要</h3>
+      <p class="text-sm sm:text-base text-gray-700 leading-relaxed">
         TicTacNineは、9つの小さな○×ゲーム（Tic-Tac-Toe）を組み合わせた戦略的なゲームです。
         普通の○×ゲームとは違い、自分の手によって相手が次に打てる場所が決まる、奥深いゲームです。
       </p>
@@ -37,40 +37,95 @@
       </ol>
     </section>
 
+    <!-- パネルとボードの関係図 -->
+    <section>
+      <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-blue-600">🎯 パネルとボードの関係</h3>
+      <div class="bg-blue-50 p-3 sm:p-6 rounded-lg">
+        <p class="text-sm sm:text-base text-gray-700 mb-3 sm:mb-4">選択したパネルの位置によって、相手が次に操作するボードが決まります：</p>
+        
+        <div class="flex flex-col lg:flex-row items-center justify-center gap-4 sm:gap-8">
+          <!-- パネル位置の図 -->
+          <div class="text-center">
+            <h4 class="text-sm sm:text-base font-semibold text-blue-800 mb-2 sm:mb-3">パネルの位置</h4>
+            <div class="inline-grid grid-cols-3 gap-0.5 sm:gap-1 bg-white p-2 sm:p-4 rounded-lg border-2 border-blue-200">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">1</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">2</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">3</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">4</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">5</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">6</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">7</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">8</div>
+              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 border border-blue-300 flex items-center justify-center font-bold text-blue-800 text-sm sm:text-base">9</div>
+            </div>
+            <p class="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">パネル配置（1-9）</p>
+          </div>
+
+          <!-- 矢印 -->
+          <div class="text-xl sm:text-2xl text-blue-600 rotate-90 lg:rotate-0">→</div>
+
+          <!-- ボード配置の図 -->
+          <div class="text-center">
+            <h4 class="font-semibold text-blue-800 mb-3">対応するボード</h4>
+            <div class="inline-grid grid-cols-3 gap-1 bg-white p-4 rounded-lg border-2 border-green-200">
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">A</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">B</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">C</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">D</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">E</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">F</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">G</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">H</div>
+              <div class="w-12 h-12 bg-green-100 border border-green-300 flex items-center justify-center font-bold text-green-800">I</div>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">ボード配置（A-I）</p>
+          </div>
+        </div>
+
+        <div class="mt-6 bg-white p-4 rounded-lg border border-blue-200">
+          <h4 class="font-semibold text-blue-800 mb-2">例</h4>
+          <ul class="text-sm text-gray-700 space-y-1">
+            <li>• パネル<strong>1</strong>を選択 → 相手は<strong>ボードA</strong>でプレイ</li>
+            <li>• パネル<strong>5</strong>を選択 → 相手は<strong>ボードE</strong>（中央）でプレイ</li>
+            <li>• パネル<strong>9</strong>を選択 → 相手は<strong>ボードI</strong>でプレイ</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <!-- 重要なポイント -->
     <section>
       <h3 class="text-lg font-semibold mb-3 text-blue-600">⚡ 重要なポイント</h3>
       <div class="bg-yellow-50 p-4 rounded-lg">
         <p class="text-gray-700 leading-relaxed">
           <strong>マスの位置 = 次のボード</strong><br>
-          例：ボードAの右上のマス（位置3）に打つと、相手は次にボードC（3番目のボード）でプレイすることになります。
-          この連鎖的なルールが戦略の鍵となります！
+          この連鎖的なルールが戦略の鍵となります！相手の動きを制限したり、自分に有利なボードに誘導することができます。
         </p>
       </div>
     </section>
 
     <!-- 対戦モード -->
     <section>
-      <h3 class="text-lg font-semibold mb-3 text-blue-600">🎲 対戦モード</h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-blue-50 p-4 rounded-lg">
-          <h4 class="font-semibold text-blue-800 mb-2">ローカルモード</h4>
-          <p class="text-sm text-blue-700">同じ画面で2人が交互にプレイ</p>
+      <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-blue-600">🎲 対戦モード</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <div class="bg-blue-50 p-3 sm:p-4 rounded-lg">
+          <h4 class="text-sm sm:text-base font-semibold text-blue-800 mb-1 sm:mb-2">ローカルモード</h4>
+          <p class="text-xs sm:text-sm text-blue-700">同じ画面で2人が交互にプレイ</p>
         </div>
-        <div class="bg-green-50 p-4 rounded-lg">
-          <h4 class="font-semibold text-green-800 mb-2">PCモード</h4>
-          <p class="text-sm text-green-700">コンピューター相手に1人でプレイ</p>
+        <div class="bg-green-50 p-3 sm:p-4 rounded-lg">
+          <h4 class="text-sm sm:text-base font-semibold text-green-800 mb-1 sm:mb-2">PCモード</h4>
+          <p class="text-xs sm:text-sm text-green-700">コンピューター相手に1人でプレイ</p>
         </div>
-        <div class="bg-purple-50 p-4 rounded-lg">
-          <h4 class="font-semibold text-purple-800 mb-2">ネットワークモード</h4>
-          <p class="text-sm text-purple-700">オンラインで他のプレイヤーと対戦</p>
+        <div class="bg-purple-50 p-3 sm:p-4 rounded-lg">
+          <h4 class="text-sm sm:text-base font-semibold text-purple-800 mb-1 sm:mb-2">ネットワークモード</h4>
+          <p class="text-xs sm:text-sm text-purple-700">オンラインで他のプレイヤーと対戦</p>
         </div>
       </div>
     </section>
 
     <!-- 戻るボタン -->
-    <div class="text-center pt-6">
-      <%= link_to "ゲーム選択に戻る", new_game_path, class: "bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition-colors" %>
+    <div class="text-center pt-4 sm:pt-6">
+      <%= link_to "ゲーム選択に戻る", new_game_path, class: "bg-blue-600 text-white py-2 px-4 sm:px-6 rounded-md hover:bg-blue-700 transition-colors text-sm sm:text-base" %>
     </div>
   </div>
 </div>

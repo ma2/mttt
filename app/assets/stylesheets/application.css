@@ -15,20 +15,17 @@
 @layer components {
   @keyframes pop {
     0% {
-      transform: scale(0.5);
       opacity: 0;
     }
-    80% {
-      transform: scale(1.1);
-      opacity: 1;
+    50% {
+      opacity: 0.5;
     }
     100% {
-      transform: scale(1);
       opacity: 1;
     }
   }
   .animate-pop {
-    animation: pop 0.4s ease-out forwards;
+    animation: pop 0.3s ease-out forwards;
   }
 }
 /* ---- ここまで ---- */

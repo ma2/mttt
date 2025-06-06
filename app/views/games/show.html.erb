@@ -7,17 +7,17 @@
     <% network_game = NetworkGame.find_by(game: @game) %>
     data-mttt-player-role-value="<%= network_game&.player_number(session[:player_id]) %>"
   <% end %>
-  class="space-y-6 px-4 py-6"
+  class="space-y-4 sm:space-y-6 px-2 sm:px-4 py-4 sm:py-6 max-w-6xl mx-auto"
 >
   <div class="text-center mb-2">
-    <img src="/logo.svg" alt="TicTacNine Logo" class="w-12 h-12 mx-auto mb-2">
-    <h1 class="text-2xl font-bold">TicTacNine</h1>
+    <img src="/logo.svg" alt="TicTacNine Logo" class="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2">
+    <h1 class="text-xl sm:text-2xl font-bold">TicTacNine</h1>
   </div>
-  <h2 class="text-xl font-semibold mb-4 text-center">
+  <h2 class="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-center">
     <%= @game.mode == "local" ? "ローカルモード" : (@game.mode == "pc" ? "PCモード" : "ネットワークモード") %>
   </h2>
   
-  <div class="text-lg font-semibold mb-4">
+  <div class="text-base sm:text-lg font-semibold mb-2 sm:mb-4 text-center">
     <span data-mttt-target="currentTurn">
       <% if @game.mode == "pc" %>
         <%= @game.current_player == "X" ? "あなたのターンです" : "PCのターンです" %>
@@ -34,53 +34,53 @@
     </span>
   </div>
 
-  <div class="grid grid-cols-3 gap-4">
+  <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-xs sm:max-w-md md:max-w-2xl mx-auto">
     <%= render partial: "boards/board", collection: @game.boards, as: :board %>
   </div>
 
-  <div class="mt-6">
+  <div class="mt-4 sm:mt-6 text-sm sm:text-base text-center">
     <p>操作したパネル数：X(<span data-mttt-target="moveCountX">0</span>) – O(<span data-mttt-target="moveCountO">0</span>)</p>
     <p>勝利したボード数：X(<span data-mttt-target="boardCountX">0</span>) – O(<span data-mttt-target="boardCountO">0</span>)</p>
   </div>
 
-  <div class="mt-6">
-    <p class="text-2xl font-bold text-red-600" data-mttt-target="result"></p>
+  <div class="mt-4 sm:mt-6">
+    <p class="text-lg sm:text-2xl font-bold text-red-600 text-center" data-mttt-target="result"></p>
   </div>
 
-  <div class="mt-6">
+  <div class="mt-4 sm:mt-6 text-center">
     <% if @game.mode == "net" %>
-      <button data-action="click->mttt#abandonGame" class="px-3 py-1 border rounded bg-red-100 hover:bg-red-200 text-red-700">
+      <button data-action="click->mttt#abandonGame" class="px-4 py-2 sm:px-6 sm:py-3 border rounded bg-red-100 hover:bg-red-200 text-red-700 text-sm sm:text-base">
         対戦を終了
       </button>
     <% else %>
-      <%= link_to "最初に戻る", new_game_path, class: "px-3 py-1 border rounded" %>
+      <%= link_to "最初に戻る", new_game_path, class: "px-4 py-2 sm:px-6 sm:py-3 border rounded text-sm sm:text-base" %>
     <% end %>
   </div>
   
   <!-- 勝利ダイアログ -->
-  <dialog data-mttt-target="winDialog" class="p-8 rounded-lg shadow-xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
+  <dialog data-mttt-target="winDialog" class="p-6 sm:p-8 rounded-lg shadow-xl fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 w-11/12 max-w-md">
     <div class="text-center">
-      <h2 class="text-3xl font-bold mb-4" data-mttt-target="winMessage"></h2>
-      <p class="text-lg mb-6">
+      <h2 class="text-2xl sm:text-3xl font-bold mb-4" data-mttt-target="winMessage"></h2>
+      <p class="text-base sm:text-lg mb-6">
         最終スコア: X(<span data-mttt-target="finalBoardCountX">0</span>) - O(<span data-mttt-target="finalBoardCountO">0</span>)
       </p>
-      <div class="flex gap-4 justify-center">
-        <button data-action="click->mttt#closeDialog" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded">閉じる</button>
-        <%= link_to "もう一度プレイ", new_game_path, class: "px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded" %>
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+        <button data-action="click->mttt#closeDialog" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm sm:text-base">閉じる</button>
+        <%= link_to "もう一度プレイ", new_game_path, class: "px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded text-sm sm:text-base" %>
       </div>
     </div>
   </dialog>
   
   <!-- スキップダイアログ -->
-  <dialog data-mttt-target="skipDialog" class="p-6 rounded-lg shadow-xl max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
+  <dialog data-mttt-target="skipDialog" class="p-4 sm:p-6 rounded-lg shadow-xl w-11/12 max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
     <div class="text-center">
-      <p class="text-lg mb-4" data-mttt-target="skipMessage"></p>
-      <button data-action="click->mttt#closeSkipDialog" class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded">OK</button>
+      <p class="text-base sm:text-lg mb-4" data-mttt-target="skipMessage"></p>
+      <button data-action="click->mttt#closeSkipDialog" class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded text-sm sm:text-base">OK</button>
     </div>
   </dialog>
   
   <!-- 対戦終了確認ダイアログ -->
-  <dialog data-mttt-target="abandonDialog" class="p-6 rounded-lg shadow-xl max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
+  <dialog data-mttt-target="abandonDialog" class="p-4 sm:p-6 rounded-lg shadow-xl w-11/12 max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0">
     <div class="text-center">
       <h3 class="text-lg font-semibold mb-4">対戦を終了しますか？</h3>
       <p class="text-sm text-gray-600 mb-6">対戦を終了すると、相手の勝利となります。</p>

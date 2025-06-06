@@ -279,14 +279,21 @@ export default class extends Controller {
   applyMove(move) {
     const bd = this.element.querySelector(`[data-board-name="${move.board}"]`);
     const btn = bd.querySelector(`[data-mttt-panel-value="${move.panel}"]`);
-    // ボタン要素にテキストを設定 ( "X" or "O" )
-    btn.textContent = move.player;
+    // ボタン内のspan要素を取得（なければ作成）
+    let span = btn.querySelector('span');
+    if (!span) {
+      span = document.createElement('span');
+      btn.appendChild(span);
+    }
+    
+    // spanにテキストを設定 ( "X" or "O" )
+    span.textContent = move.player;
 
-    // エフェクト：Tailwind の animate-pop を付与して一瞬飛び出す
-    btn.classList.add("animate-pop");
+    // エフェクト：span要素に animate-pop を付与
+    span.classList.add("animate-pop");
     setTimeout(() => {
-      btn.classList.remove("animate-pop");
-    }, 400);
+      span.classList.remove("animate-pop");
+    }, 300);
 
     // もしボード決着済みなら、ボード全体をグレーアウト（opacity-50）にして勝者マークを表示
     if (move.completed && move.board_winner) {
