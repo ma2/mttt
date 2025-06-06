@@ -1,21 +1,21 @@
-<div class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg text-center">
+<div class="w-full max-w-md mx-auto mt-4 sm:mt-8 p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
   <div class="text-center mb-2">
-    <img src="/logo.svg" alt="TicTacNine Logo" class="w-16 h-16 mx-auto mb-3">
-    <h1 class="text-2xl font-bold">TicTacNine</h1>
+    <img src="/logo.svg" alt="TicTacNine Logo" class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3">
+    <h1 class="text-xl sm:text-2xl font-bold">TicTacNine</h1>
   </div>
-  <h2 class="text-xl font-semibold mb-6">対戦相手を待機中...</h2>
+  <h2 class="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">対戦相手を待機中...</h2>
   
-  <div class="mb-6">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-    <p class="text-gray-600">マッチングコード: <strong><%= @network_game.match_code %></strong></p>
-    <p class="text-sm text-gray-500 mt-2">同じコードを入力した相手が見つかるまでお待ちください</p>
+  <div class="mb-4 sm:mb-6">
+    <div class="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-500 mx-auto mb-3 sm:mb-4"></div>
+    <p class="text-sm sm:text-base text-gray-600">マッチングコード: <strong><%= @network_game.match_code %></strong></p>
+    <p class="text-xs sm:text-sm text-gray-500 mt-2">同じコードを入力した相手が見つかるまでお待ちください</p>
   </div>
   
   <div class="space-y-3">
-    <button onclick="checkMatch()" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
+    <button onclick="checkMatch()" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors text-sm sm:text-base">
       再確認
     </button>
-    <%= link_to "キャンセル", new_game_path, class: "block w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors" %>
+    <%= link_to "キャンセル", new_game_path, class: "block w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors text-sm sm:text-base" %>
   </div>
 </div>
 

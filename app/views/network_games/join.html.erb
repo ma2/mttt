@@ -1,12 +1,12 @@
-<div class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
+<div class="w-full max-w-md mx-auto mt-4 sm:mt-8 p-4 sm:p-6 bg-white rounded-lg shadow-lg">
   <div class="text-center mb-2">
-    <img src="/logo.svg" alt="TicTacNine Logo" class="w-16 h-16 mx-auto mb-3">
-    <h1 class="text-2xl font-bold">TicTacNine</h1>
+    <img src="/logo.svg" alt="TicTacNine Logo" class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3">
+    <h1 class="text-xl sm:text-2xl font-bold">TicTacNine</h1>
   </div>
-  <h2 class="text-xl font-semibold text-center mb-6">ネット対戦</h2>
+  <h2 class="text-lg sm:text-xl font-semibold text-center mb-4 sm:mb-6">ネット対戦</h2>
   
-  <div class="mb-6">
-    <p class="text-gray-600 text-sm mb-4">
+  <div class="mb-4 sm:mb-6">
+    <p class="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4">
       対戦したい相手と同じマッチングコードを入力してください。
       任意の文字列（英数字、日本語可）を使用できます。
     </p>
@@ -21,15 +21,15 @@
           required: true %>
     </div>
     
-    <div class="flex gap-3">
-      <%= form.submit "対戦相手を探す", class: "flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors" %>
-      <%= link_to "戻る", new_game_path, class: "flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors text-center" %>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <%= form.submit "対戦相手を探す", class: "flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors text-sm sm:text-base" %>
+      <%= link_to "戻る", new_game_path, class: "flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors text-center text-sm sm:text-base" %>
     </div>
   <% end %>
   
-  <div class="mt-6 p-4 bg-blue-50 rounded-md">
-    <h3 class="font-semibold text-blue-800 mb-2">使い方:</h3>
-    <ol class="text-sm text-blue-700 space-y-1">
+  <div class="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-md">
+    <h3 class="font-semibold text-blue-800 mb-2 text-sm sm:text-base">使い方:</h3>
+    <ol class="text-xs sm:text-sm text-blue-700 space-y-1">
       <li>1. 対戦相手と同じマッチングコードを決める</li>
       <li>2. 両方のプレイヤーが同じコードを入力</li>
       <li>3. マッチングが成立したらゲーム開始！</li>
