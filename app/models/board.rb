@@ -2,6 +2,8 @@ class Board < ApplicationRecord
   belongs_to :game
   has_many   :panels, dependent: :destroy
 
+  validates :name, presence: true
+
   # ボード内 3x3 の決着判定メソッド
   def check_winner!
     return if completed
@@ -28,8 +30,8 @@ class Board < ApplicationRecord
     # 引き分けチェック: すべてのパネルが埋まっているか
     if panels.where(state: nil).count == 0
       Rails.logger.info "Board #{name}: Draw detected - all panels filled"
-      update!(winner: "D", completed: true)
-      return "D"
+      update!(winner: nil, completed: true)
+      return nil
     end
 
     nil
