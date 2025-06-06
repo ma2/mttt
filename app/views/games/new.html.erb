@@ -8,18 +8,27 @@
     <div class="mb-4">
       <%= f.label :mode, "対戦モード", class: "block font-medium text-center mb-4" %>
       <div class="space-y-3">
-        <div class="flex items-center">
-          <%= f.radio_button :mode, "local", checked: true, id: "mode_local", class: "mr-2" %>
-          <%= f.label :mode_local, "ローカル (同じ画面で交互に操作)", class: "cursor-pointer" %>
-        </div>
-        <div class="flex items-center">
-          <%= f.radio_button :mode, "pc", id: "mode_pc", class: "mr-2" %>
-          <%= f.label :mode_pc, "PC と対戦 (PC はランダム)", class: "cursor-pointer" %>
-        </div>
-        <div class="flex items-center">
-          <%= f.radio_button :mode, "net", id: "mode_net", class: "mr-2" %>
-          <%= f.label :mode_net, "ネットワーク対戦 (オンライン)", class: "cursor-pointer" %>
-        </div>
+        <label for="mode_local" class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+          <%= f.radio_button :mode, "local", checked: true, id: "mode_local", class: "mr-3" %>
+          <div>
+            <div class="font-medium">ローカル</div>
+            <div class="text-sm text-gray-600">同じ画面で交互に操作</div>
+          </div>
+        </label>
+        <label for="mode_pc" class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+          <%= f.radio_button :mode, "pc", id: "mode_pc", class: "mr-3" %>
+          <div>
+            <div class="font-medium">PC と対戦</div>
+            <div class="text-sm text-gray-600">PC はランダム</div>
+          </div>
+        </label>
+        <label for="mode_net" class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+          <%= f.radio_button :mode, "net", id: "mode_net", class: "mr-3" %>
+          <div>
+            <div class="font-medium">ネットワーク対戦</div>
+            <div class="text-sm text-gray-600">オンライン</div>
+          </div>
+        </label>
       </div>
     </div>
     <div class="text-center">
