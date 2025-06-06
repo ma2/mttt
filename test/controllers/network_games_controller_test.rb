@@ -73,7 +73,6 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
   test "create_match should not match with same session" do
     # 最初にセッションを確立
     post network_games_create_match_url, params: { match_code: "establish_session" }
-    established_session = NetworkGame.last.player1_session
 
     # 同じセッション（既に確立されたもの）で既存のゲームコードにアクセス
     assert_difference("NetworkGame.count") do

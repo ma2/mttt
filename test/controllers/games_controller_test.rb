@@ -89,7 +89,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
          as: :json
 
     assert_response :success
-    
+
     response_data = JSON.parse(response.body)
     assert response_data["moves"].present?
   end
@@ -115,7 +115,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
 
   test "abandon should reject unauthenticated users" do
     net_game = Game.create!(mode: "net")
-    network_game = NetworkGame.create!(
+    NetworkGame.create!(
       game: net_game,
       match_code: "test123",
       player1_session: "session1",
@@ -127,7 +127,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     post abandon_game_url(net_game), as: :json
 
     assert_response :forbidden
-    
+
     response_data = JSON.parse(response.body)
     assert_equal "このゲームの参加者ではありません", response_data["error"]
   end
