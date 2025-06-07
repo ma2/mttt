@@ -11,6 +11,28 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "TicTacNine を始める"
   end
 
+  test "new should cleanup unfinished network games" do
+    # セッションを確立
+    post network_games_create_match_url, params: { match_code: "establish_for_cleanup" }
+    session_id = session[:player_id]
+
+    # 未完了のネットワークゲームを作成
+    net_game = Game.create!(mode: "net")
+    network_game = NetworkGame.create!(
+      game: net_game,
+      match_code: "cleanup_test",
+      player1_session: session_id,
+      status: "waiting"
+    )
+
+    # newページにアクセス（クリーンアップを実行）
+    get new_game_url
+
+    # 未完了ゲームが削除されることを確認
+    assert_nil NetworkGame.find_by(id: network_game.id)
+    assert_nil Game.find_by(id: net_game.id)
+  end
+
   test "should create game with local mode" do
     assert_difference("Game.count") do
       post games_url, params: { game: { mode: "local" } }
@@ -31,10 +53,33 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_url(game)
   end
 
+  test "should redirect to network games join for net mode" do
+    assert_no_difference("Game.count") do
+      post games_url, params: { game: { mode: "net" } }
+    end
+
+    assert_redirected_to network_games_join_path
+  end
+
   test "should show game" do
     get game_url(@game)
     assert_response :success
     assert_select "h1", "TicTacNine"
+  end
+
+  test "show should redirect for unauthorized network game access" do
+    net_game = Game.create!(mode: "net")
+    NetworkGame.create!(
+      game: net_game,
+      match_code: "test123",
+      player1_session: "other_session",
+      player2_session: "another_session",
+      status: "playing"
+    )
+
+    get game_url(net_game)
+    assert_redirected_to new_game_path
+    assert_equal "この対戦に参加していません", flash[:alert]
   end
 
   test "should get howto" do

@@ -4,6 +4,17 @@ class GamesController < ApplicationController
   def new
     @game = Game.new
     # new.html.erb では form で mode を選択できる
+
+    # ネットワーク対戦の未完了ゲームをクリーンアップ
+    # ただし、セッションIDは保持する（次のネットワーク対戦で使用するため）
+    if session[:player_id]
+      cleanup_unfinished_network_games(session[:player_id])
+    end
+
+    # ブラウザキャッシュを無効化
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
   end
 
   def howto
@@ -11,12 +22,30 @@ class GamesController < ApplicationController
   end
 
   def create
+    # ネットワーク対戦の場合は、network_games_join_pathにリダイレクト
+    if params[:game][:mode] == "net"
+      redirect_to network_games_join_path
+      return
+    end
+
     @game = Game.create!(game_params)
     redirect_to @game
   end
 
   def show
     # show.html.erb に @game, @game.boards, @game.panels を渡す
+
+    # ネットワーク対戦の場合、適切なセッションを持っているか確認
+    if @game.mode == "net"
+      network_game = NetworkGame.find_by(game: @game)
+
+      # NetworkGameが存在しない、または現在のセッションが参加者でない場合
+      if !network_game || ![ network_game.player1_session, network_game.player2_session ].include?(session[:player_id])
+        Rails.logger.info "Unauthorized access to network game #{@game.id} by session #{session[:player_id]}"
+        redirect_to new_game_path, alert: "この対戦に参加していません"
+        nil
+      end
+    end
   end
 
   # POST /games/:id/move
@@ -407,5 +436,22 @@ class GamesController < ApplicationController
     end
 
     Rails.logger.info "Cleaned up #{old_games.count} expired network games"
+  end
+
+  # 指定されたセッションIDに関連するすべてのNetworkGameを削除
+  def cleanup_unfinished_network_games(session_id)
+    unfinished_games = NetworkGame.where(
+      "(player1_session = ? OR player2_session = ?)",
+      session_id, session_id
+    )
+
+    Rails.logger.info "Cleaning up #{unfinished_games.count} games for session #{session_id}"
+
+    unfinished_games.find_each do |network_game|
+      # 関連するGameも削除
+      game = network_game.game
+      network_game.destroy!
+      game.destroy! if game
+    end
   end
 end

@@ -45,8 +45,18 @@
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
     const netRadio = document.querySelector('#mode_net');
+    const submitBtn = document.querySelector('#start-game-btn');
     
+    // フォーム送信時の処理
     form.addEventListener('submit', function(e) {
+      if (netRadio.checked) {
+        e.preventDefault();
+        window.location.href = '<%= network_games_join_path %>';
+      }
+    });
+    
+    // ネットワーク対戦が選択された時、ボタンをクリックしたら即座にリダイレクト
+    submitBtn.addEventListener('click', function(e) {
       if (netRadio.checked) {
         e.preventDefault();
         window.location.href = '<%= network_games_join_path %>';

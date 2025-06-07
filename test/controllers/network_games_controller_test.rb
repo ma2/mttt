@@ -18,6 +18,23 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", "ネット対戦"
   end
 
+  test "join should cleanup unfinished games" do
+    # セッションを設定して未完了ゲームを作成
+    post network_games_create_match_url, params: { match_code: "cleanup_test" }
+    session_id = session[:player_id]
+    unfinished_game = NetworkGame.last
+
+    assert_equal "waiting", unfinished_game.status
+    assert_equal session_id, unfinished_game.player1_session
+
+    # joinページにアクセス（クリーンアップが実行される）
+    get network_games_join_url
+
+    # 未完了ゲームが削除されることを確認（セッションは保持）
+    assert_nil NetworkGame.find_by(id: unfinished_game.id)
+    assert_equal session_id, session[:player_id]
+  end
+
   test "create_match should create new network game with valid match code" do
     assert_difference("NetworkGame.count") do
       post network_games_create_match_url, params: { match_code: "newcode123" }
@@ -61,54 +78,78 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "マッチングコードを入力してください", flash[:alert]
   end
 
-  test "create_match should generate session player_id if not present" do
-    # セッションをクリア
-    reset!
+  test "create_match should always generate new session player_id" do
+    # 最初のリクエスト
+    post network_games_create_match_url, params: { match_code: "session_test1" }
+    first_session_id = session[:player_id]
+    assert_not_nil first_session_id
+    assert_equal 32, first_session_id.length # hex(16) = 32文字
 
-    post network_games_create_match_url, params: { match_code: "newsession" }
-    assert_not_nil session[:player_id]
-    assert_equal 32, session[:player_id].length # hex(16) = 32文字
+    # 2回目のリクエスト（新しいセッションIDが生成されるはず）
+    post network_games_create_match_url, params: { match_code: "session_test2" }
+    second_session_id = session[:player_id]
+    assert_not_nil second_session_id
+    assert_not_equal first_session_id, second_session_id
   end
 
-  test "create_match should not match with same session" do
-    # 最初にセッションを確立
-    post network_games_create_match_url, params: { match_code: "establish_session" }
-
-    # 同じセッション（既に確立されたもの）で既存のゲームコードにアクセス
-    assert_difference("NetworkGame.count") do
-      # このテストは実際には自分自身とマッチングしようとする場面を模倣
-      # 新しいゲームが作成されることを確認
-      post network_games_create_match_url, params: { match_code: "establish_session" }
-    end
-
-    # 新しいゲームが作成された（マッチングしなかった）ことを確認
-    games = NetworkGame.where(match_code: "establish_session")
-    assert_equal 2, games.count
-    assert games.all?(&:waiting?)
-  end
 
   test "waiting should show waiting page for waiting game" do
-    get network_games_waiting_url(network_game_id: @network_game.id)
+    # セッションを設定
+    post network_games_create_match_url, params: { match_code: "waiting_test" }
+    network_game = NetworkGame.last
+
+    get network_games_waiting_url(network_game_id: network_game.id)
     assert_response :success
     assert_select "h1", "TicTacNine"
     assert_select "h2", "対戦相手を待機中..."
   end
 
+  test "waiting should redirect to join if not participant" do
+    # ゲームを作成
+    game = Game.create!(mode: "net")
+    network_game = NetworkGame.create!(
+      match_code: "test123",
+      game: game,
+      player1_session: "other_session",
+      status: "waiting"
+    )
+
+    # 別のセッションでアクセス
+    get network_games_waiting_url(network_game_id: network_game.id)
+    assert_redirected_to network_games_join_path
+    assert_equal "この対戦に参加していません", flash[:alert]
+  end
+
+  test "waiting should redirect to join if game not found" do
+    get network_games_waiting_url(network_game_id: 99999)
+    assert_redirected_to network_games_join_path
+    assert_equal "対戦が見つかりません", flash[:alert]
+  end
+
   test "waiting should redirect to game if already matched" do
-    @network_game.update!(status: "matched", player2_session: "session2")
+    # セッションを設定して参加者としてアクセス
+    post network_games_create_match_url, params: { match_code: "matched_test" }
+    network_game = NetworkGame.last
 
-    get network_games_waiting_url(network_game_id: @network_game.id)
+    # 別のプレイヤーを追加してマッチング状態にする
+    network_game.update!(status: "matched", player2_session: "session2")
 
-    @network_game.reload
-    assert_equal "playing", @network_game.status
-    assert_redirected_to game_url(@network_game.game)
+    get network_games_waiting_url(network_game_id: network_game.id)
+
+    network_game.reload
+    assert_equal "playing", network_game.status
+    assert_redirected_to game_url(network_game.game)
   end
 
   test "waiting should redirect to game if already playing" do
-    @network_game.update!(status: "playing", player2_session: "session2")
+    # セッションを設定して参加者としてアクセス
+    post network_games_create_match_url, params: { match_code: "playing_test" }
+    network_game = NetworkGame.last
 
-    get network_games_waiting_url(network_game_id: @network_game.id)
-    assert_redirected_to game_url(@network_game.game)
+    network_game.update!(status: "playing", player2_session: "session2")
+
+    get network_games_waiting_url(network_game_id: network_game.id)
+    assert_redirected_to game_url(network_game.game)
   end
 
   test "check_match should return false for waiting game" do
