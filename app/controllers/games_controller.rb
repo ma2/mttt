@@ -23,7 +23,15 @@ class GamesController < ApplicationController
 
   def create
     # ネットワーク対戦の場合は、network_games_join_pathにリダイレクト
+    # ただし、Ajaxリクエストや意図しないフォーム送信を防ぐため、追加チェックを行う
     if params[:game][:mode] == "net"
+      # リファラーが明らかに不正な場合（network_games関連のページから来た場合）のみ拒否
+      if request.referer&.include?('/network_games/') && !request.referer&.include?('/network_games/join')
+        Rails.logger.info "Preventing automatic redirect from network games page: #{request.referer}"
+        redirect_to new_game_path
+        return
+      end
+      
       redirect_to network_games_join_path
       return
     end
@@ -438,14 +446,14 @@ class GamesController < ApplicationController
     Rails.logger.info "Cleaned up #{old_games.count} expired network games"
   end
 
-  # 指定されたセッションIDに関連するすべてのNetworkGameを削除
+  # 指定されたセッションIDがプレイヤー1として作成した未完了ゲームのみを削除
   def cleanup_unfinished_network_games(session_id)
     unfinished_games = NetworkGame.where(
-      "(player1_session = ? OR player2_session = ?)",
-      session_id, session_id
+      "player1_session = ? AND status IN (?)",
+      session_id, ["waiting", "matched"]
     )
 
-    Rails.logger.info "Cleaning up #{unfinished_games.count} games for session #{session_id}"
+    Rails.logger.info "Cleaning up #{unfinished_games.count} games created by session #{session_id}"
 
     unfinished_games.find_each do |network_game|
       # 関連するGameも削除

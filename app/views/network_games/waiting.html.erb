@@ -23,15 +23,32 @@
   let checkInterval;
   
   function checkMatch() {
+    console.log('Checking match for network_game_id: <%= @network_game.id %>');
     fetch('<%= check_match_network_game_path(@network_game) %>')
-      .then(response => response.json())
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log('Check match response:', data);
         if (data.matched) {
           clearInterval(checkInterval);
+          console.log('Match found! Redirecting to:', data.game_url);
           window.location.href = data.game_url;
+        } else {
+          console.log('No match yet, continuing to poll...');
         }
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+        console.error('Error checking match:', error);
+        console.error('This error caused redirect to join page');
+        // エラーが発生した場合、ゲームが削除された可能性があるのでjoinページに戻る
+        clearInterval(checkInterval);
+        window.location.href = '<%= network_games_join_path %>';
+      });
   }
   
   // 最初にすぐチェック

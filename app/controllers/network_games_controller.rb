@@ -22,13 +22,11 @@ class NetworkGamesController < ApplicationController
       return
     end
 
-    # 既存のセッションがある場合は、そのセッションの未完了ゲームをクリーンアップ
-    if session[:player_id]
-      cleanup_unfinished_games(session[:player_id])
-    end
+    # セッションIDがない場合のみ生成
+    session[:player_id] ||= SecureRandom.hex(16)
 
-    # セッションIDがない場合は生成（既存がある場合は新規生成）
-    session[:player_id] = SecureRandom.hex(16)
+    # 既存のセッションがある場合は、そのセッションの未完了ゲームをクリーンアップ
+    cleanup_unfinished_games(session[:player_id])
 
     Rails.logger.info "=== CREATE_MATCH ==="
     Rails.logger.info "New session_id: #{session[:player_id]}"
@@ -52,34 +50,62 @@ class NetworkGamesController < ApplicationController
   def waiting
     @network_game = NetworkGame.find_by(id: params[:network_game_id])
 
+    Rails.logger.info "=== WAITING ACCESS ==="
+    Rails.logger.info "Requested network_game_id: #{params[:network_game_id]}"
+    Rails.logger.info "Current session: #{session[:player_id]}"
+    Rails.logger.info "NetworkGame found: #{@network_game&.id}, status: #{@network_game&.status}"
+
     # NetworkGameが見つからない場合はjoinページへ
     unless @network_game
+      Rails.logger.info "NetworkGame not found, redirecting to join"
       redirect_to network_games_join_path, alert: "対戦が見つかりません"
       return
     end
 
-    # 現在のセッションがこのゲームの参加者でない場合はjoinページへ
+    # 現在のセッションがこのゲームの参加者でない場合
     current_session = session[:player_id]
     unless current_session && [ @network_game.player1_session, @network_game.player2_session ].include?(current_session)
+      Rails.logger.info "Session #{current_session} not participant in game #{@network_game.id}"
+      Rails.logger.info "Game participants: player1=#{@network_game.player1_session}, player2=#{@network_game.player2_session}"
+      
       redirect_to network_games_join_path, alert: "この対戦に参加していません"
       return
     end
 
     # 既にマッチングしている場合はゲーム画面へ
     if @network_game.matched? || @network_game.playing?
+      Rails.logger.info "Game #{@network_game.id} already matched/playing, redirecting to game"
       @network_game.update!(status: "playing") if @network_game.matched?
       redirect_to game_path(@network_game.game)
+    else
+      Rails.logger.info "Showing waiting page for game #{@network_game.id}"
     end
   end
 
   def check_match
-    network_game = NetworkGame.find(params[:id])
+    network_game = NetworkGame.find_by(id: params[:id])
+
+    Rails.logger.info "=== CHECK_MATCH ==="
+    Rails.logger.info "Checking network_game_id: #{params[:id]}"
+    Rails.logger.info "Current session: #{session[:player_id]}"
+    
+    unless network_game
+      Rails.logger.info "NetworkGame not found"
+      render json: { error: "Game not found" }, status: :not_found
+      return
+    end
+
+    Rails.logger.info "NetworkGame status: #{network_game.status}"
+    Rails.logger.info "Player1: #{network_game.player1_session}, Player2: #{network_game.player2_session}"
+
 
     if network_game.matched? || network_game.playing?
       # マッチング済みまたはプレイ中の場合
       network_game.update!(status: "playing") if network_game.matched?
+      Rails.logger.info "Match found! Returning game_url: #{game_path(network_game.game)}"
       render json: { matched: true, game_url: game_path(network_game.game) }
     else
+      Rails.logger.info "No match yet, status: #{network_game.status}"
       render json: { matched: false }
     end
   end
@@ -87,15 +113,15 @@ class NetworkGamesController < ApplicationController
   private
 
   def cleanup_unfinished_games(session_id)
-    # 指定されたセッションIDに関連するすべてのNetworkGameを削除（playingも含む）
-    # キャンセル後は完全にクリーンスタートするため
+    # 指定されたセッションIDがプレイヤー1として作成した未完了ゲームのみを削除
+    # プレイヤー2として参加した場合は、そのゲームは削除しない（他の人が作ったゲーム）
     unfinished_games = NetworkGame.where(
-      "(player1_session = ? OR player2_session = ?)",
-      session_id, session_id
+      "player1_session = ? AND status IN (?)",
+      session_id, ["waiting", "matched"]
     )
 
     Rails.logger.info "=== CLEANUP START ==="
-    Rails.logger.info "Cleaning up #{unfinished_games.count} games for session #{session_id}"
+    Rails.logger.info "Cleaning up #{unfinished_games.count} games created by session #{session_id}"
 
     unfinished_games.find_each do |network_game|
       Rails.logger.info "Deleting NetworkGame #{network_game.id} (match_code: #{network_game.match_code}, status: #{network_game.status})"

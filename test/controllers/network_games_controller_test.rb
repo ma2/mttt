@@ -18,20 +18,29 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", "ネット対戦"
   end
 
-  test "join should cleanup unfinished games" do
+  test "join should cleanup only own unfinished games" do
     # セッションを設定して未完了ゲームを作成
     post network_games_create_match_url, params: { match_code: "cleanup_test" }
     session_id = session[:player_id]
-    unfinished_game = NetworkGame.last
+    own_game = NetworkGame.last
 
-    assert_equal "waiting", unfinished_game.status
-    assert_equal session_id, unfinished_game.player1_session
+    assert_equal "waiting", own_game.status
+    assert_equal session_id, own_game.player1_session
+
+    # 他のプレイヤーの待機中ゲームを作成
+    other_game = NetworkGame.create!(
+      match_code: "other_test",
+      game: Game.create!(mode: "net"),
+      player1_session: "other_session",
+      status: "waiting"
+    )
 
     # joinページにアクセス（クリーンアップが実行される）
     get network_games_join_url
 
-    # 未完了ゲームが削除されることを確認（セッションは保持）
-    assert_nil NetworkGame.find_by(id: unfinished_game.id)
+    # 自分のゲームのみ削除され、他のプレイヤーのゲームは残ることを確認
+    assert_nil NetworkGame.find_by(id: own_game.id)
+    assert_not_nil NetworkGame.find_by(id: other_game.id)
     assert_equal session_id, session[:player_id]
   end
 
@@ -78,18 +87,18 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
     assert_equal "マッチングコードを入力してください", flash[:alert]
   end
 
-  test "create_match should always generate new session player_id" do
+  test "create_match should preserve existing session player_id" do
     # 最初のリクエスト
     post network_games_create_match_url, params: { match_code: "session_test1" }
     first_session_id = session[:player_id]
     assert_not_nil first_session_id
     assert_equal 32, first_session_id.length # hex(16) = 32文字
 
-    # 2回目のリクエスト（新しいセッションIDが生成されるはず）
+    # 2回目のリクエスト（既存のセッションIDが保持されるはず）
     post network_games_create_match_url, params: { match_code: "session_test2" }
     second_session_id = session[:player_id]
     assert_not_nil second_session_id
-    assert_not_equal first_session_id, second_session_id
+    assert_equal first_session_id, second_session_id
   end
 
 
@@ -193,6 +202,14 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
     @network_game.reload
     assert_equal "playing", @network_game.status
   end
+  
+  test "check_match should return 404 for non-existent game" do
+    get check_match_network_game_url(99999), as: :json
+    assert_response :not_found
+    
+    response_data = JSON.parse(response.body)
+    assert_equal "Game not found", response_data["error"]
+  end
 
   test "create_match flow should work end to end" do
     # プレイヤー1が新しいマッチを作成
@@ -216,4 +233,23 @@ class NetworkGamesControllerTest < ActionDispatch::IntegrationTest
     assert_equal player2_session, network_game.player2_session
     assert_redirected_to game_url(network_game.game)
   end
+  
+  test "should match with existing waiting game after cleanup" do
+    # 他のプレイヤーが待機中ゲームを作成
+    other_game = NetworkGame.create!(
+      match_code: "match_after_cleanup",
+      game: Game.create!(mode: "net"),
+      player1_session: "other_session",
+      status: "waiting"
+    )
+    
+    # 自分でマッチング（クリーンアップ後でも他のプレイヤーのゲームとマッチングできる）
+    post network_games_create_match_url, params: { match_code: "match_after_cleanup" }
+    
+    other_game.reload
+    assert_equal "playing", other_game.status
+    assert_equal session[:player_id], other_game.player2_session
+    assert_redirected_to game_url(other_game.game)
+  end
+  
 end

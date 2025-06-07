@@ -4,7 +4,7 @@
     <h1 class="text-xl sm:text-2xl font-bold">TicTacNine を始める</h1>
   </div>
 
-  <%= form_with model: @game, url: games_path, local: true do |f| %>
+  <%= form_with model: @game, url: games_path, local: true, html: { autocomplete: "off" } do |f| %>
     <div class="mb-4">
       <%= f.label :mode, "対戦モード", class: "block font-medium text-center mb-4" %>
       <div class="space-y-3">
@@ -44,8 +44,12 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('form');
+    const localRadio = document.querySelector('#mode_local');
     const netRadio = document.querySelector('#mode_net');
     const submitBtn = document.querySelector('#start-game-btn');
+    
+    // ページロード時に常にローカルモードを選択状態にする（ブラウザの状態保持を防ぐ）
+    localRadio.checked = true;
     
     // フォーム送信時の処理
     form.addEventListener('submit', function(e) {
@@ -61,6 +65,12 @@
         e.preventDefault();
         window.location.href = '<%= network_games_join_path %>';
       }
+    });
+    
+    // 意図しないフォーム送信を防ぐ
+    window.addEventListener('beforeunload', function() {
+      // ページを離れる時にローカルモードを選択状態にする
+      localRadio.checked = true;
     });
   });
 </script>
