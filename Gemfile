@@ -63,3 +63,8 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "dockerfile-rails", ">= 1.7", group: :development
+gem "litestream", "~> 0.13.0"
+gem "redis", "~> 5.4"
+gem "aws-sdk-s3", "~> 1.189", require: false
