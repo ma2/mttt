@@ -23,6 +23,9 @@ export default class extends Controller {
     // Check if we need to handle skip on page load
     this.checkForSkipNeeded();
     
+    // 初期ボーダーの設定
+    this.updateBoardBorders();
+    
     // ネット対戦の場合、定期的にチェック
     if (this.modeValue === "net") {
       // 最後の手のIDを記録
@@ -37,6 +40,34 @@ export default class extends Controller {
       this.opponentMoveInterval = setInterval(() => {
         this.checkOpponentMove();
       }, 1000);
+    }
+  }
+  
+  updateBoardBorders() {
+    // 全ボード div から border-4 と色クラスを外す
+    this.element.querySelectorAll("[data-board-name]").forEach((el) => {
+      el.classList.remove("border-4", "border-sky-400", "border-blue-600", "border-orange-500");
+      // デフォルトのborder-2を確保
+      if (!el.classList.contains("border-2")) {
+        el.classList.add("border-2");
+      }
+    });
+    
+    // next_board があれば該当ボードに適切な色の border-4 を付与
+    if (this.nextBoardValue) {
+      const nextEl = this.element.querySelector(
+        `[data-board-name="${this.nextBoardValue}"]`
+      );
+      if (nextEl) {
+        nextEl.classList.remove("border-2");
+        nextEl.classList.add("border-4");
+        // 現在のプレイヤーに基づいて色を設定
+        if (this.currentPlayer === "X") {
+          nextEl.classList.add("border-blue-600");
+        } else {
+          nextEl.classList.add("border-orange-500");
+        }
+      }
     }
   }
 
@@ -176,24 +207,8 @@ export default class extends Controller {
       this.showSkipDialog(data.skip_message);
     }
 
-    // 全ボード div から border-4 border-sky-400 を外し、
-    // next_board があれば該当ボードに border-4 border-sky-400 を再度付与
-    this.element.querySelectorAll("[data-board-name]").forEach((el) => {
-      el.classList.remove("border-4", "border-sky-400");
-      // デフォルトのborder-2を確保
-      if (!el.classList.contains("border-2")) {
-        el.classList.add("border-2");
-      }
-    });
-    if (data.next_board) {
-      const nextEl = this.element.querySelector(
-        `[data-board-name="${data.next_board}"]`
-      );
-      if (nextEl) {
-        nextEl.classList.remove("border-2");
-        nextEl.classList.add("border-4", "border-sky-400");
-      }
-    }
+    // ボーダーを更新
+    this.updateBoardBorders();
 
     // 統計情報を更新
     if (data.move_count_x !== undefined) {

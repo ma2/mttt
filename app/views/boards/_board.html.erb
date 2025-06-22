@@ -1,6 +1,7 @@
 <div
   data-board-name="<%= board.name %>"
-  class="border-2 relative aspect-square <%= 'border-4 border-sky-400' if board.name == @game.next_board %> <%= 'opacity-50' if board.completed %>"
+  data-current-player="<%= @game.current_player %>"
+  class="border-2 relative aspect-square <%= board.name == @game.next_board ? (@game.current_player == 'X' ? 'border-4 border-blue-600' : 'border-4 border-orange-500') : '' %> <%= 'opacity-50' if board.completed %>"
 >
   <div class="grid grid-cols-3 h-full">
     <% board.panels.each do |panel| %>
